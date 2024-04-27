@@ -12,7 +12,7 @@ flowchart TB
     v3([QCONTROL])
     subgraph "output"
     v4["quality report"]
-    v11["output"]
+    v11["VCF"]
     end
     v6([ALIGN])
     v8([PREPARE])
