@@ -67,6 +67,7 @@ nextflow run glebus-sasha/octopus
 ```bash
 nextflow run main.nf
 ```
-## Лицензия
 
-Этот проект лицензирован под лицензией [MIT](LICENSE).
+## License
+
+This project is licensed under the [MIT License](LICENSE).
