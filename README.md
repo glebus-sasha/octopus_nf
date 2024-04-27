@@ -5,7 +5,7 @@ This repository contains a Nextflow pipeline for analyzing Next-Generation Seque
 ```mermaid
 flowchart TB
     subgraph " "
-    v0["Channel.fromFilePairs"]
+    v0["reads"]
     v1["reference"]
     end
     v2([REFINDEX])
@@ -17,6 +17,7 @@ flowchart TB
     v6([ALIGN])
     v8([PREPARE])
     v10([VARCALL])
+    v11([output])
     v0 --> v3
     v1 --> v2
     v2 --> v6
