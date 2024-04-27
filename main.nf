@@ -1,10 +1,5 @@
 #!/usr/bin/env nextflow
 
-params.reference    = "/home/alexandr/Documents/octopus/data/references/hs38DH.fa"
-params.reads        = "/home/alexandr/Documents/octopus/data/reads/raw/*R{1,2}*.fastq*"
-params.outdir       = "results"
-params.help = false
-
 log.info """\
     ===================================
      S N P   P I P E L I N E
@@ -15,14 +10,13 @@ log.info """\
     """
     .stripIndent(true)
 
-    
 /*
  * Define the `REFINDEX` process that creates an index
  * given the reference genome file
  */
 process REFINDEX {
     tag "$reference"
-    publishDir "${params.outdir}/REFINDEX", mode:"copy"
+    publishDir "${params.outdir}/REFINDEX"
 
     input:
     path reference
@@ -43,7 +37,7 @@ process REFINDEX {
 process QCONTROL{
     tag "${sid}"
     cpus params.cpus
-    publishDir "${params.outdir}/fastp", mode:"copy"
+    publishDir "${params.outdir}/fastp"
 
     input:
     tuple val(sid), path(reads)
@@ -71,7 +65,7 @@ process QCONTROL{
 process ALIGN {
     tag "$reference ${sid}"
     cpus params.cpus
-    publishDir "${params.outdir}/ALIGN", mode:"copy"
+    publishDir "${params.outdir}/ALIGN"
     debug true
 
     input:
@@ -93,7 +87,7 @@ process ALIGN {
 
 process PREPARE {
     tag "$bamFile $reference"
-    publishDir "${params.outdir}/PREPARE", mode:"copy"
+    publishDir "${params.outdir}/PREPARE"
 	
     input:
     path reference
@@ -129,15 +123,13 @@ process VARCALL {
     """    
     octopus \
     -R $reference \
+    -T chrM \
     -I $bamFile \
     --config /home/alexandr/Documents/octopus/mitochondria.config \
     --sequence-error-model PCR \
     --forest /opt/octopus/resources/forests/germline.v0.7.4.forest \
     -o ${bamFile.baseName}.vcf.gz \
-    --threads ${task.cpus}
-
-    #   -T chrM \
-    #   
+    --threads ${task.cpus}  
     """
 }
 
