@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 
-params.reference    = "/home/alexandr/Documents/octopus/data/references/genome.fna"
-params.reads        = "/home/alexandr/Documents/octopus/data/reads/raw/*R{1,2}.fastq*"
+params.reference    = "/home/alexandr/Documents/octopus/data/references/hs38DH.fa"
+params.reads        = "/home/alexandr/Documents/octopus/data/reads/raw/*R{1,2}*.fastq*"
 params.outdir       = "results"
 params.help = false
 
@@ -22,8 +22,11 @@ log.info """\
  */
 process REFINDEX {
     tag "$reference"
+    publishDir "${params.outdir}/REFINDEX", mode:"copy"
+
     input:
     path reference
+    debug true
 
     output:
     path "*"
@@ -40,7 +43,7 @@ process REFINDEX {
 process QCONTROL{
     tag "${sid}"
     cpus params.cpus
-    publishDir "${params.outdir}/fastp"
+    publishDir "${params.outdir}/fastp", mode:"copy"
 
     input:
     tuple val(sid), path(reads)
@@ -68,7 +71,8 @@ process QCONTROL{
 process ALIGN {
     tag "$reference ${sid}"
     cpus params.cpus
-    publishDir "${params.outdir}/ALIGN"
+    publishDir "${params.outdir}/ALIGN", mode:"copy"
+    debug true
 
     input:
     tuple val(sid), path(reads1), path(reads2)
@@ -76,51 +80,64 @@ process ALIGN {
     path idx
     
     output:
-    path "${sid}.bam"
+    path "${sid}.sorted.bam"
     script:
     """
-    bwa mem -t ${task.cpus} ${reference} ${reads1} ${reads2} > ${sid}.bam
+    bwa mem \
+    -R "@RG\\tID:S41\\tSM:H1_U5\\tLB:M4\\tPU:Illumina" \
+    -t ${task.cpus} ${reference} ${reads1} ${reads2} | \
+    samtools view -bh | \
+    samtools sort -o ${sid}.sorted.bam
     """
 }
 
 process PREPARE {
-    tag "$bamFile"
-	
-    input:
-    path bamFile
-
-    output:
-    file '*.sorted.bam'
-
-    script:
-    """
-	samtools sort $bamFile -o ${bamFile.baseName}.sorted.bam
-	samtools index ${bamFile.baseName}.sorted.bam
-    """
-}
-
-process VARCALL {
-    tag "$reference $bamFile"
-    publishDir "${params.outdir}/bcftools"
-	debug true
+    tag "$bamFile $reference"
+    publishDir "${params.outdir}/PREPARE", mode:"copy"
 	
     input:
     path reference
     path bamFile
 
     output:
-    file '*.vcf'
+    file '*.sorted.bam.bai'
+    file '*.fai'
+
+    script:
+    """
+	samtools index ${bamFile.baseName}.bam
+    samtools faidx $reference
+    """
+}
+
+process VARCALL {
+    tag "$reference $bamFile"
+    publishDir "${params.outdir}/octopus"
+	debug true
+ //   errorStrategy 'ignore'
+	
+    input:
+    path reference
+    path bamFile
+    path bai
+    path fai
+
+    output:
+    file '*'
 
     script:
     """    
     octopus \
-     -R $reference \
-     -I $bamFile \
-     -T chrM \
-#     --config /opt/octopus/resources/configs/UMI.config \
-     --sequence-error-model PCR \
-     -o ${bamFile.baseName}.vcf.gz \
-     --threads 8
+    -R $reference \
+    -I $bamFile \
+    --config /home/alexandr/Documents/octopus/mitochondria.config \
+    --sequence-error-model PCR \
+    --forest /opt/octopus/resources/forests/germline.v0.7.4.forest \
+    -o ${bamFile.baseName}.vcf.gz \
+    --threads ${task.cpus}
+
+    #   -T chrM \
+    #   
     """
 }
 
@@ -130,8 +147,8 @@ workflow {
 		REFINDEX(params.reference)
 		QCONTROL(input_fastqs)
        	ALIGN(QCONTROL.out[0], params.reference, REFINDEX.out)
-       	PREPARE(ALIGN.out)
-       	VARCALL(params.reference, PREPARE.out)
+      	PREPARE(params.reference, ALIGN.out)
+       	VARCALL(params.reference, ALIGN.out, PREPARE.out[0], PREPARE.out[1])
 }
 
 workflow.onComplete {
