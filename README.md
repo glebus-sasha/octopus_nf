@@ -1,6 +1,6 @@
 # octopus-variant-calling
 
-This repository contains a Nextflow pipeline for analyzing Next-Generation Sequencing (NGS) data using octopus (https://github.com/luntergroup/octopus).
+This repository contains a Nextflow variant calling pipeline for analyzing Next-Generation Sequencing (NGS) data using octopus (https://github.com/luntergroup/octopus).
 
 ```mermaid
 flowchart TB
