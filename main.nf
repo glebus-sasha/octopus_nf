@@ -10,10 +10,27 @@ log.info """\
     """
     .stripIndent(true)
 
-/*
- * Define the `REFINDEX` process that creates an index
- * given the reference genome file
- */
+// Define help
+if ( params.help ) {
+    help = """main.nf: This repository contains a Nextflow pipeline for analyzing 
+            |Next-Generation Sequencing (NGS) data using octopus 
+            |
+            |Required arguments:
+            |   --reference     Location of the reference file.
+            |                   [default: ${params.reference}]
+            |   --reads         Location of the input file file.
+            |                   [default: ${params.reads}]
+            |   --outdir        Location of the output file file.
+            |                   [default: ${params.outdir}]
+            |
+            |Optional arguments:
+""".stripMargin()
+    // Print the help with the stripped margin and exit
+    println(help)
+    exit(0)
+}
+
+// Define the `REFINDEX` process that creates the index of the genome
 process REFINDEX {
     tag "$reference"
     publishDir "${params.outdir}/REFINDEX"
@@ -31,9 +48,7 @@ process REFINDEX {
     """
 }
 
-/*
- * Define the `QCONTROL` process that performs quality trimming and filtering of reads
- */
+// Define the `QCONTROL` process that performs quality trimming and filtering of reads
 process QCONTROL{
     tag "${sid}"
     cpus params.cpus
@@ -59,9 +74,7 @@ process QCONTROL{
     """
 }
 
-/*
- * Define the `ALIGN` process that aligns reads to the reference genome
- */
+// Define the `ALIGN` process that aligns reads to the reference genome
 process ALIGN {
     tag "$reference ${sid}"
     cpus params.cpus
@@ -85,6 +98,7 @@ process ALIGN {
     """
 }
 
+// Define the `PREPARE` process that prepares the reference genome indices
 process PREPARE {
     tag "$bamFile $reference"
     publishDir "${params.outdir}/PREPARE"
@@ -104,11 +118,12 @@ process PREPARE {
     """
 }
 
+// Define the `VARCALL` process that performs variant calling
 process VARCALL {
     tag "$reference $bamFile"
     publishDir "${params.outdir}/octopus"
 	debug true
- //   errorStrategy 'ignore'
+    errorStrategy 'ignore'
 	
     input:
     path reference
@@ -133,8 +148,10 @@ process VARCALL {
     """
 }
 
+// Define the input channels for FASTQ files, if provided
 input_fastqs = params.reads ? Channel.fromFilePairs(params.reads, checkIfExists: true) : null
 
+// Define the workflow
 workflow {
 		REFINDEX(params.reference)
 		QCONTROL(input_fastqs)
@@ -143,6 +160,7 @@ workflow {
        	VARCALL(params.reference, ALIGN.out, PREPARE.out[0], PREPARE.out[1])
 }
 
+// Log pipeline execution summary on completion
 workflow.onComplete {
     log.info """\
         Pipeline execution summary
