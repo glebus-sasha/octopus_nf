@@ -1,4 +1,4 @@
-# Your Pipeline Name
+# octopus-variant-calling
 
 This repository contains a Nextflow pipeline for analyzing Next-Generation Sequencing (NGS) data using octopus (https://github.com/luntergroup/octopus).
 
