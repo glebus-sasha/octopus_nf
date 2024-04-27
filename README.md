@@ -4,13 +4,13 @@ This repository contains a Nextflow variant calling pipeline for analyzing Next-
 
 ```mermaid
 flowchart TB
-    subgraph " "
+    subgraph "input"
     v0["reads"]
     v1["reference"]
     end
     v2([REFINDEX])
     v3([QCONTROL])
-    subgraph " "
+    subgraph "output"
     v4["quality report"]
     v11["output"]
     end
