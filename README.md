@@ -11,13 +11,12 @@ flowchart TB
     v2([REFINDEX])
     v3([QCONTROL])
     subgraph " "
-    v4[" "]
-    v11[" "]
+    v4["quality report"]
+    v11["output"]
     end
     v6([ALIGN])
     v8([PREPARE])
     v10([VARCALL])
-    v11([output])
     v0 --> v3
     v1 --> v2
     v2 --> v6
