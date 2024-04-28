@@ -53,7 +53,7 @@ nextflow run glebus-sasha/octopus
 
 ### Requirements
 
-- Nextflow (https://www.nextflow.io/)
+- Nextflow (https://www.nextflow.io/docs/latest/install.html)
 - Singularity (https://sylabs.io/singularity/)
 
 ### Running the Pipeline
