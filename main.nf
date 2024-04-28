@@ -140,7 +140,7 @@ process VARCALL {
     -R $reference \
     -T chrM \
     -I $bamFile \
-    --config /home/alexandr/Documents/octopus/mitochondria.config \
+    --config /home/alexandr/Documents/octopus-variant-calling/mitochondria.config \
     --sequence-error-model PCR \
     --forest /opt/octopus/resources/forests/germline.v0.7.4.forest \
     -o ${bamFile.baseName}.vcf.gz \
