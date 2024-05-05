@@ -48,7 +48,11 @@ The pipeline is implemented in Nextflow and includes several stages for NGS data
 To quickly run the pipeline, use the following command:
 
 ```bash
-nextflow run glebus-sasha/octopus
+nextflow run glebus-sasha/octopus \
+-profile <docker/singularity> \
+--reference <path-to-reference>\
+--reads <path-to-reads-folder>\
+--outdir results
 ```
 
 ### Requirements
