@@ -43,6 +43,7 @@ The pipeline is implemented in Nextflow and includes several stages for NGS data
 3. **ALIGN:** Sequence alignment using BWA mem.
 4. **PREPARE:** File processing and preparation using Samtools.
 5. **VARCALL:** Variant calling using Octopus.
+6. **ANNOTATE:** Annotation using vep.
 
 ## Usage
 
@@ -51,10 +52,10 @@ The pipeline is implemented in Nextflow and includes several stages for NGS data
 To quickly run the pipeline, use the following command:
 
 ```bash
-nextflow run glebus-sasha/octopus \
+nextflow run glebus-sasha/octopus_nf \
 -profile <docker/singularity> \
 --reference <path-to-reference> \
---reads "<path-to-reads-folder>/*R{1,2}*.fastq*" \ # quotes are important
+--reads "<path-to-reads-folder>/*[rR]{1,2}*.fastq*" \ # quotes are important
 --outdir results
 ```
 
@@ -62,13 +63,13 @@ nextflow run glebus-sasha/octopus \
 
 - Nextflow (https://www.nextflow.io/docs/latest/install.html)
 - Docker (https://docs.docker.com/engine/install/) or
-Singularity (https://docs.sylabs.io/guides/3.0/user-guide/installation.html)
+- Singularity (https://github.com/sylabs/singularity/blob/main/INSTALL.md)
 
 ### Running the Pipeline
 
 1. Install all the necessary dependencies such as Nextflow, Singularity.
 3. Clone this repository: `git clone https://github.com/glebus-sasha/octopus.git`
-4. Navigate to the pipeline directory: `cd octopus`
+4. Navigate to the pipeline directory: `cd octopus_nf`
 5. Edit the `nextflow.config` file to set the required parameters, if necessary.
 6. Run the pipeline, setting the required parameters, for example:
 
