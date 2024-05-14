@@ -3,6 +3,7 @@
 This repository contains a Nextflow variant calling pipeline for analyzing Next-Generation Sequencing (NGS) data using octopus (https://github.com/luntergroup/octopus).
 
 ```mermaid
+%%{init: {'theme':'base'}}%%
 flowchart TB
     subgraph "input"
     v0["reads"]
@@ -12,11 +13,12 @@ flowchart TB
     v3([QCONTROL])
     subgraph "output"
     v4["quality report"]
-    v11["VCF"]
+    v14["VCF"]
     end
     v6([ALIGN])
     v8([PREPARE])
     v10([VARCALL])
+    v13([ANNOTATE])
     v0 --> v3
     v1 --> v2
     v2 --> v6
@@ -28,7 +30,8 @@ flowchart TB
     v1 --> v8
     v8 --> v10
     v1 --> v10
-    v10 --> v11
+    v10 --> v13
+    v13 --> v14
 ```
 
 ## Description
