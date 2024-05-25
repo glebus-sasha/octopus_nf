@@ -1,12 +1,27 @@
 #!/usr/bin/env nextflow
+// Include processes
+include { REFINDEX }            from './processes/refindex.nf'
+include { QCONTROL }            from './processes/qcontrol.nf'
+include { TRIM }                from './processes/trim.nf'
+include { ALIGN }               from './processes/align.nf'
+include { FLAGSTAT }            from './processes/flagstat.nf'
+include { QUALIMAP }            from './processes/qualimap.nf'
+include { FAINDEX }             from './processes/faindex.nf'
+include { BAMINDEX }            from './processes/bamindex.nf'
+include { VARCALL }             from './processes/varcall.nf'
+include { DOWNLOAD_VEP_CACHE }  from './processes/download_vep_cache.nf'
+include { ANNOTATE }            from './processes/annotate.nf'
+include { REPORT }              from './processes/report.nf'
 
+// Logging pipeline information
 log.info """\
-    ===================================
-     S N P   P I P E L I N E
-    ===================================
-    reference: ${params.reference}
-    reads    : ${params.reads}
-    outdir   : ${params.outdir}
+\033[0;36m  ==========================================  \033[0m
+\033[0;34m       O C T O P U S   P I P E L I N E        \033[0m
+\033[0;36m  ==========================================  \033[0m
+
+    reference:  ${params.reference}
+    reads:      ${params.reads}
+    outdir:     ${params.outdir}
     """
     .stripIndent(true)
 
@@ -24,158 +39,68 @@ if ( params.help ) {
             |                   [default: ${params.outdir}]
             |
             |Optional arguments:
+            |   -profile        <docker/singularity>
+            |   -prebuild       Use pre-built bwa indexes and pre-downloaded vep cache
+            |   -reports        Generate pipeline reports
+            |
 """.stripMargin()
     // Print the help with the stripped margin and exit
     println(help)
     exit(0)
 }
 
-// Define the `REFINDEX` process that creates the index of the genome
-process REFINDEX {
-    tag "$reference"
-    publishDir "${params.outdir}/REFINDEX"
-
-    input:
-    path reference
-    debug true
-
-    output:
-    path "*"
-
-    script:
-    """
-    bwa index $reference
-    """
-}
-
-// Define the `QCONTROL` process that performs quality trimming and filtering of reads
-process QCONTROL{
-    tag "${sid}"
-    cpus params.cpus
-    publishDir "${params.outdir}/fastp"
-
-    input:
-    tuple val(sid), path(reads)
-
-    output:
-    tuple val(sid), path(fq_1_trimmed), path(fq_2_trimmed), emit: trimmed_reads
-            file("${sid}.fastp_stats.html")
-
-    script:
-    fq_1_trimmed = sid + '_R1_P.fastq.gz'
-    fq_2_trimmed = sid + '_R2_P.fastq.gz'
-    """
-    fastp -q 20 -l 140 --trim_poly_g --thread ${task.cpus} \
-    --in1 ${reads[0]} \
-    --in2 ${reads[1]}\
-    --out1 $fq_1_trimmed \
-    --out2 $fq_2_trimmed \
-    --html ${sid}.fastp_stats.html
-    """
-}
-
-// Define the `ALIGN` process that aligns reads to the reference genome
-process ALIGN {
-    tag "$reference ${sid}"
-    cpus params.cpus
-    publishDir "${params.outdir}/ALIGN"
-    debug true
-
-    input:
-    tuple val(sid), path(reads1), path(reads2)
-    path reference
-    path idx
-    
-    output:
-    path "${sid}.sorted.bam"
-    script:
-    """
-    bwa mem \
-    -R "@RG\\tID:S41\\tSM:H1_U5\\tLB:M4\\tPU:Illumina" \
-    -t ${task.cpus} ${reference} ${reads1} ${reads2} | \
-    samtools view -bh | \
-    samtools sort -o ${sid}.sorted.bam
-    """
-}
-
-// Define the `PREPARE` process that prepares the reference genome indices
-process PREPARE {
-    tag "$bamFile $reference"
-    publishDir "${params.outdir}/PREPARE"
-	
-    input:
-    path reference
-    path bamFile
-
-    output:
-    file '*.sorted.bam.bai'
-    file '*.fai'
-
-    script:
-    """
-	samtools index ${bamFile.baseName}.bam
-    samtools faidx $reference
-    """
-}
-
-// Define the `VARCALL` process that performs variant calling
-process VARCALL {
-    tag "$reference $bamFile"
-    publishDir "${params.outdir}/octopus"
-	debug true
-    errorStrategy 'ignore'
-	
-    input:
-    path reference
-    path bamFile
-    path bai
-    path fai
-
-    output:
-    file '*'
-
-    script:
-    """    
-    octopus \
-    -R $reference \
-    -T chrM \
-    -I $bamFile \
-    --config /home/alexandr/Documents/octopus-variant-calling/mitochondria.config \
-    --sequence-error-model PCR \
-    --forest /opt/octopus/resources/forests/germline.v0.7.4.forest \
-    -o ${bamFile.baseName}.vcf.gz \
-    --threads ${task.cpus}  
-    """
-}
-
-// Define the input channels for FASTQ files, if provided
+// Define the input channel for FASTQ files, if provided
 input_fastqs = params.reads ? Channel.fromFilePairs(params.reads, checkIfExists: true) : null
+
+// Define the input channel for bwa index files, if provided
+bwaidx = params.bwaidx ? Channel.fromPath(params.bwaidx, checkIfExists: true).collect() : null
+
+
+// Define the input channels for Clinvar files and indeces, if provided
+//clinvar_gz = params.bwaidx ? Channel.fromPath("${params.vepcache}/clinvar.vcf.gz", checkIfExists: true) : null
+//clinvar_gz_tbi = params.bwaidx ? Channel.fromPath("${params.vepcache}/clinvar.vcf.gz.tbi", checkIfExists: true) : null
 
 // Define the workflow
 workflow {
-		REFINDEX(params.reference)
-		QCONTROL(input_fastqs)
-       	ALIGN(QCONTROL.out[0], params.reference, REFINDEX.out)
-      	PREPARE(params.reference, ALIGN.out)
-       	VARCALL(params.reference, ALIGN.out, PREPARE.out[0], PREPARE.out[1])
+    
+    QCONTROL(input_fastqs)
+    TRIM(input_fastqs)
+    if( !params.prebuild ) {
+        new File("$params.vepcache").mkdirs() // Make the VEP cache  directory if it needs
+        REFINDEX(params.reference)
+        ALIGN(TRIM.out.trimmed_reads, params.reference, REFINDEX.out)
+        DOWNLOAD_VEP_CACHE(params.vepcache)
+    }
+    else {
+        ALIGN(TRIM.out.trimmed_reads, params.reference, bwaidx)
+    }
+    FLAGSTAT(ALIGN.out.bam)
+    QUALIMAP(ALIGN.out.bam)
+    FAINDEX(params.reference)
+    BAMINDEX(ALIGN.out.bam)
+    VARCALL(params.reference, BAMINDEX.out.bai, FAINDEX.out.fai)
+//    ANNOTATE(VARCALL.out.vcf)
+//    REPORT(TRIM.out.json.collect(), QCONTROL.out.zip.collect(), FLAGSTAT.out.flagstat.collect(), QUALIMAP.out.collect(), ANNOTATE.out.html.collect())
+    
+    // Make the pipeline reports directory if it needs
+    if ( params.reports ) {
+        def pipeline_report_dir = new File("${params.outdir}/pipeline_info/")
+        pipeline_report_dir.mkdirs()
+    }
 }
 
 // Log pipeline execution summary on completion
 workflow.onComplete {
-    log.info """\
+    log.info """\033[0;32m\
         Pipeline execution summary
         ---------------------------
-        Completed at: ${workflow.complete}
+        Completed at: ${workflow.complete.format('yyyy-MM-dd_HH-mm-ss')}
         Duration    : ${workflow.duration}
         Success     : ${workflow.success}
         workDir     : ${workflow.workDir}
         exit status : ${workflow.exitStatus}
-        """
+        \033[0m"""
         .stripIndent()
         
     log.info ( workflow.success ? "\nDone" : "\nOops" )
 }
-
-
-
-
