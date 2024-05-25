@@ -2,7 +2,7 @@
 process VARCALL {
     container = 'dancooke/octopus:latest'
     tag "$reference $bamFile"
-    publishDir "${params.outdir}/octopus"
+    publishDir "$${params.outdir}/${workflow.start.format('yyyy-MM-dd_HH-mm-ss')}_${workflow.runName}/VARCALL"
 	debug true
 //    errorStrategy 'ignore'
 	
