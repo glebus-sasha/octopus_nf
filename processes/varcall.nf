@@ -1,6 +1,6 @@
 // Define the `VARCALL` process that performs variant calling
 process VARCALL {
-    container = 'dancooke/octopus:sandybridge'
+    container = 'dancooke/octopus:latest'
     tag "$reference $bamFile"
     publishDir "${params.outdir}/octopus"
 	debug true
