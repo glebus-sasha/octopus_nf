@@ -66,10 +66,6 @@ workflow {
     
     QCONTROL(input_fastqs)
     TRIM(input_fastqs)
-    if( !params.prebuild ) {
-        new File("$params.vepcache").mkdirs() // Make the VEP cache  directory if it needs
-        DOWNLOAD_VEP_CACHE(params.vepcache)
-    }
     ALIGN(TRIM.out.trimmed_reads, params.reference, bwaidx)
     FLAGSTAT(ALIGN.out.bam)
     QUALIMAP(ALIGN.out.bam)
