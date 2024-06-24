@@ -54,7 +54,7 @@ input_fastqs = params.reads ? Channel.fromFilePairs(params.reads, checkIfExists:
 bwaidx = params.bwaidx ? Channel.fromPath(params.bwaidx, checkIfExists: true).collect() : null
 
 // Define the input channel for fai index files, if provided
-faidx = params.bwaidx ? Channel.fromPath(params.faidxfaidx, checkIfExists: true).collect() : null
+faidx = params.bwaidx ? Channel.fromPath(params.faidx, checkIfExists: true).collect() : null
 
 
 // Define the input channels for Clinvar files and indeces, if provided
