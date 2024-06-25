@@ -22,8 +22,6 @@ flowchart TB
     v14([VARCALL])
     v17([ANNOTATE])
     v24([REPORT])
-    v19(( ))
-    v20(( ))
     v21(( ))
     v22(( ))
     v23(( ))
@@ -41,7 +39,7 @@ flowchart TB
     v14 --> v17
     v17 --> v18
     v17 --> v23
-
+    v31 --> v14
     v30 --> v14
     v21 --> v24
     v22 --> v24
