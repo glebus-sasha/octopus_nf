@@ -6,17 +6,15 @@ This repository contains a Nextflow variant calling pipeline for analyzing Next-
 %%{init: {'theme':'base'}}%%
 flowchart TB
     subgraph "input"
-    v0["reads"]
+    v0["trimmed reads"]
     v1["reference"]
     v30["indices"]
     v31["vep_bd"]
     end
-    v3([QCONTROL])
     subgraph "output"
     v18["vcf"]
     v25["html"]
     end
-    v5([TRIM])
     v8([ALIGN])
     v9([FLAGSTAT])
     v10([QUALIMAP])
@@ -29,11 +27,7 @@ flowchart TB
     v21(( ))
     v22(( ))
     v23(( ))
-    v0 --> v3
-    v0 --> v5
-    v3 --> v20
-    v5 --> v8
-    v5 --> v19
+    v0 --> v19
     v1 --> v8
     v30 --> v8
     v8 --> v9
