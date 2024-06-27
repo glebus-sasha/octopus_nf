@@ -55,8 +55,8 @@ faidx = params.bwaidx ? Channel.fromPath("${params.faidx}/*.fai", checkIfExists:
 
 
 // Define the input channels for Clinvar files and indeces, if provided
-//clinvar_gz = params.bwaidx ? Channel.fromPath("${params.vepcache}/clinvar.vcf.gz", checkIfExists: true) : null
-//clinvar_gz_tbi = params.bwaidx ? Channel.fromPath("${params.vepcache}/clinvar.vcf.gz.tbi", checkIfExists: true) : null
+clinvar_gz = params.bwaidx ? Channel.fromPath("${params.vepcache}/clinvar.vcf.gz", checkIfExists: true) : null
+clinvar_gz_tbi = params.bwaidx ? Channel.fromPath("${params.vepcache}/clinvar.vcf.gz.tbi", checkIfExists: true) : null
 
 // Define the workflow
 workflow {
