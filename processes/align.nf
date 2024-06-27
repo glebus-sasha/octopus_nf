@@ -8,7 +8,7 @@ process ALIGN {
 //    errorStrategy 'ignore'
 
     input:
-    tuple val(sid), path(reads1), path(reads2)
+    tuple val(sid), path(reads)
     path reference
     path idx
     
@@ -18,8 +18,7 @@ process ALIGN {
     script:
     """
     bwa mem \
-    -R "@RG\\tID:S41\\tSM:H1_U5\\tLB:M4\\tPU:Illumina" \
-    -t ${task.cpus} ${reference} ${reads1} ${reads2} | \
+    -t ${task.cpus} ${reference} ${reads[0]} ${reads[1]} | \
     samtools view -bh | \
     samtools sort -o ${sid}.sorted.bam
     """
