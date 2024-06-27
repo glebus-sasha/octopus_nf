@@ -70,7 +70,7 @@ To quickly run the pipeline, use the following command:
 nextflow run glebus-sasha/octopus_nf \
 -profile <docker/singularity> \
 --reference <path-to-reference> \
---reads "<path-to-reads-folder>/*[rR]{1,2}*.fastq*" \ # quotes are important
+--reads <path-to-reads-folder> \
 --outdir results
 ```
 
