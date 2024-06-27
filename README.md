@@ -9,7 +9,7 @@ flowchart TB
     v0["trimmed reads"]
     v1["reference"]
     v30["indices"]
-    v31["vep_bd"]
+    v31["vep_DB"]
     end
     subgraph "output"
     v18["vcf"]
