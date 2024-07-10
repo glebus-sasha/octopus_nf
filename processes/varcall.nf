@@ -10,11 +10,14 @@ process VARCALL {
     path reference
     tuple val(sid), path(bai), path(bamFile)
     path fai
+    path bedfile
 
     output:
     tuple val(sid), path("${sid}.vcf.gz"),      emit:vcf
 
     script:
+    def bed_option = bedfile.getBaseName() == 'dummy' ? "" : "---evaluation-regions ${bedfile}"    // If the base name of bedfile is 'dummy', set bed_option to an empty string
+
     """    
     octopus \
     -R $reference \
@@ -22,7 +25,7 @@ process VARCALL {
     --sequence-error-model PCR \
     --forest /opt/octopus/resources/forests/germline.v0.7.4.forest \
     -o ${sid}.vcf.gz \
-    --threads ${task.cpus}  \
+    --threads ${task.cpus} ${bed_option} \
     -C cancer \
     --very-fast
     """

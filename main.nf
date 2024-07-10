@@ -55,8 +55,8 @@ faidx = params.bwaidx ? Channel.fromPath("${params.faidx}/*.fai", checkIfExists:
 
 
 // Define the input channels for Clinvar files and indeces, if provided
-clinvar_gz = params.bwaidx ? Channel.fromPath("${params.vepcache}/clinvar.vcf.gz", checkIfExists: true) : null
-clinvar_gz_tbi = params.bwaidx ? Channel.fromPath("${params.vepcache}/clinvar.vcf.gz.tbi", checkIfExists: true) : null
+//clinvar_gz = params.bwaidx ? Channel.fromPath("${params.vepcache}/clinvar.vcf.gz", checkIfExists: true) : null
+//clinvar_gz_tbi = params.bwaidx ? Channel.fromPath("${params.vepcache}/clinvar.vcf.gz.tbi", checkIfExists: true) : null
 
 // Define the bed_file channel
 // If params.regions is provided, create a channel from the specified path and collect it into a list
@@ -66,13 +66,13 @@ bed_file = params.regions ? Channel.fromPath("${params.regions}").collect() : Ch
 
 // Define the workflow
 workflow {
-    ALIGN(input_fastqs, params.reference, bwaidx)
+    ALIGN(input_fastqs, params.reference, bwaidx, bed_file)
     FLAGSTAT(ALIGN.out.bam)
-    QUALIMAP(ALIGN.out.bam)
+//    QUALIMAP(ALIGN.out.bam)
     BAMINDEX(ALIGN.out.bam)
-    VARCALL(params.reference, BAMINDEX.out.bai, faidx)
-    ANNOTATE(VARCALL.out.vcf)
-    REPORT(FLAGSTAT.out.flagstat.collect(), QUALIMAP.out.collect(), ANNOTATE.out.html.collect())
+    VARCALL(params.reference, BAMINDEX.out.bai, faidx, bed_file)
+ //   ANNOTATE(VARCALL.out.vcf)
+//    REPORT(FLAGSTAT.out.flagstat.collect(), QUALIMAP.out.collect(), ANNOTATE.out.html.collect())
     
     // Make the pipeline reports directory if it needs
     if ( params.reports ) {
