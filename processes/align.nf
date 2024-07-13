@@ -20,7 +20,7 @@ process ALIGN {
     def bed_option = bedfile.getBaseName() == 'dummy' ? "" : "-L ${bedfile}"    // If the base name of bedfile is 'dummy', set bed_option to an empty string
     """
         bwa mem \
-            -R "@RG\tID:${sid}\tSM:\tPL:\tLB:\tPU:" \
+            -R "@RG\tID:${sid}\tSM: \tPL: \tLB: \tPU: " \
             -t ${task.cpus} ${reference} ${reads[0]} ${reads[1]} | \
         samtools view -bh ${bed_option} | \
         samtools sort -o ${sid}.sorted.bam
