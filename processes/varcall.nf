@@ -4,6 +4,7 @@ process VARCALL {
     tag "$reference $bamFile"
     publishDir "${params.outdir}/${workflow.start.format('yyyy-MM-dd_HH-mm-ss')}_${workflow.runName}/VARCALL"
 	debug true
+    cpus 1
 //    errorStrategy 'ignore'
 	
     input:
