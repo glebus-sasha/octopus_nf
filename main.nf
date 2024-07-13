@@ -68,11 +68,11 @@ bed_file = params.regions ? Channel.fromPath("${params.regions}").collect() : Ch
 workflow {
     ALIGN(input_fastqs, params.reference, bwaidx, bed_file)
     FLAGSTAT(ALIGN.out.bam)
-//    QUALIMAP(ALIGN.out.bam)
+    QUALIMAP(ALIGN.out.bam)
     BAMINDEX(ALIGN.out.bam)
     VARCALL(params.reference, BAMINDEX.out.bai, faidx, bed_file)
- //   ANNOTATE(VARCALL.out.vcf)
-//    REPORT(FLAGSTAT.out.flagstat.collect(), QUALIMAP.out.collect(), ANNOTATE.out.html.collect())
+    ANNOTATE(VARCALL.out.vcf)
+    REPORT(FLAGSTAT.out.flagstat.collect(), QUALIMAP.out.collect(), ANNOTATE.out.html.collect())
     
     // Make the pipeline reports directory if it needs
     if ( params.reports ) {
