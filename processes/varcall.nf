@@ -17,7 +17,7 @@ process VARCALL {
     tuple val(sid), path("${sid}.vcf.gz"),      emit:vcf
 
     script:
-    def bed_option = bedfile.getBaseName() == 'dummy' ? "" : "---evaluation-regions ${bedfile}"    // If the base name of bedfile is 'dummy', set bed_option to an empty string
+    def bed_option = bedfile.getBaseName() == 'dummy' ? "" : "--evaluation-regions ${bedfile}"    // If the base name of bedfile is 'dummy', set bed_option to an empty string
 
     """    
     octopus \
